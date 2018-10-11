@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+	<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+	
+	<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+	<script src="https://unpkg.com/prop-types@15.6/prop-types.js"></script>
+	<link rel="stylesheet" type="text/css" href="style.css"> 
+</head>
+<body>
+	<div id="root"></div>
+	<script type="text/babel">
+		
+		const myNews = [
+			{
+				id: 1,
+				author: 'Ведомости',
+				text:'Россия и Казахстан создадут комиссию после аварии «Союза»',
+				bigText: 'Будет создана правительственная комиссия по расследованию аварии «Союза», заявил глава комитета по ЧС МВД Казахстана Владимир Беккер'
+			},
+			{
+				id: 2,
+				author: 'Ведомости',
+				text:'Что известно об аварии «Союза» с экипажем. Главное',
+				bigText: 'Полеты единственного средства доставки экипажей на МКС остановлены до выяснения причин'
+			},
+			{
+				id: 3,
+				author: 'Hi-Tech',
+				text:'Samsung показала удивительный смартфон с 4 основными камерами',
+				bigText: 'Новинка — не конкурент Galaxy S9 или Note9. Все дело — в цене'
+			}
+		];
+
+		class Add extends React.Component {
+			state = {
+				name: '',
+				text: '',
+				bigText: '',
+				agree: false
+			}
+
+			validate = () => {
+				const { name,text,bigText,agree } = this.state;
+
+				if (agree && name.trim() && text.trim() && bigText.trim()) {
+					return true;
+				}
+
+				return false;
+			}
+
+			onInputChange = (e) => {
+				const { id,value } = e.currentTarget;
+				this.setState({ [id]: value })
+			}
+
+			onCheckboxChange = (e) => {
+				this.setState({ agree: e.currentTarget.checked })
+			}
+
+			onBtnClick = (e) => {
+				e.preventDefault();
+				const { name,text,bigText } = this.state;
+				this.props.onAddNews({ id: +new Date(), author: name, text, bigText });
+			}
+
+			render() {
+				const { name,text,bigText } = this.state;
+				return(
+					<form className="add">
+						<input
+							id="name"
+							className="add__author"
+							onChange={this.onInputChange}
+							value={name}
+							placeholder="Введите Ваше имя"
+						/>
+						<textarea
+							id="text"
+							className="add__text"
+							onChange={this.onInputChange}
+							value={text}
+							placeholder="Введите основной текст новости"
+						></textarea>
+						<textarea
+							id="bigText"
+							className="add__text"
+							onChange={this.onInputChange}
+							value={bigText}
+							placeholder="Введите дополнительный текст новости"
+						></textarea>
+						<label>
+							<input
+								type="checkbox"
+								onChange={this.onCheckboxChange}
+							/> Я согласен с правилами
+						</label>
+						<button className="add__btn" onClick={this.onBtnClick} disabled={!this.validate()}>Добавить статью</button>
+					</form>
+				)
+			}
+		}
+
+		class Article extends React.Component {
+			state = {
+				visible: false
+			}
+
+			onMoreLinkClick = (e) => {
+				e.preventDefault();
+				this.setState({ visible: true });
+			}
+
+			render() {
+				const { author,text,bigText } = this.props.data;
+				const { visible } = this.state;
+				return(
+					<div className="article">
+						<h3 className="news__author">{author}</h3>
+						<p className="news__text">{text}</p>
+						{
+							!visible && <a href="#" onClick={this.onMoreLinkClick}>Подробнее</a>
+						}
+						{
+							visible && <p className="news__bigText">{bigText}</p>
+						}
+					</div>
+				)
+			}
+		}
+
+		class News extends React.Component {
+			renderNews = () => {
+				const { data } = this.props;
+				let newsTemplate = null;
+
+				if (data.length) {
+					newsTemplate = data.map(function(item){
+						return(
+							<Article key={item.id} data={item} />
+						)
+					})
+				} else {
+					newsTemplate = <p>Новостей нет</p>
+				}
+
+				return newsTemplate;
+			}
+
+			render() {
+				return(
+					<div className="news">
+						{this.renderNews()}
+					</div>
+				)
+			}
+		}
+
+		class App extends React.Component {
+			state = {
+				news: myNews
+			}
+
+			handleOnAddNews = (data) => {
+				let nextNews = [data, ...this.state.news];
+				this.setState({ news: nextNews });
+			}
+
+			render() {
+				return(
+					<React.Fragment>
+						<Add onAddNews={this.handleOnAddNews}/>
+						<h2>Новости</h2>
+						<News data={this.state.news}/>
+					</React.Fragment>
+				)
+			}
+		}
+
+
+
+		ReactDOM.render(
+			<App />,
+			document.getElementById('root')
+		)
+
+	</script>
+</body>
+</html>
